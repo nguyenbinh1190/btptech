@@ -1,0 +1,144 @@
+```html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BTP TECH AI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      color: #172033;
+    }
+    .app {
+      max-width: 760px;
+      height: 100dvh;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      background: white;
+    }
+    header {
+      padding: 18px;
+      color: white;
+      background: #087f5b;
+    }
+    header h2 { margin: 0 0 5px; }
+    header p { margin: 0; font-size: 14px; }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+    }
+    .msg {
+      padding: 12px 14px;
+      margin: 0 0 12px;
+      border-radius: 14px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+    }
+    .bot { background: #f1f5f9; }
+    .user {
+      background: #d9fbe9;
+      margin-left: 35px;
+    }
+    form {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid #ddd;
+    }
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+    button {
+      padding: 0 18px;
+      border: 0;
+      border-radius: 12px;
+      background: #087f5b;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .5; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h2>BTP TECH AI</h2>
+      <p>Trợ lý AI cá nhân của anh</p>
+    </header>
+
+    <main id="chat">
+      <div class="msg bot">Xin chào anh! Em có thể giúp gì cho anh hôm nay?</div>
+    </main>
+
+    <form id="form">
+      <input id="message" placeholder="Nhập câu hỏi..." autocomplete="off" required>
+      <button id="send" type="submit">Gửi</button>
+    </form>
+  </div>
+
+  <script>
+    const API_URL = "https://btptech.nguyenbinh1190.workers.dev/";
+    const chat = document.getElementById("chat");
+    const form = document.getElementById("form");
+    const input = document.getElementById("message");
+    const send = document.getElementById("send");
+
+    function addMessage(text, type) {
+      const div = document.createElement("div");
+      div.className = "msg " + type;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+      return div;
+    }
+
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const message = input.value.trim();
+      if (!message) return;
+
+      addMessage(message, "user");
+      input.value = "";
+      send.disabled = true;
+      const waiting = addMessage("Em đang suy nghĩ...", "bot");
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.detail || data.error || "Lỗi HTTP " + response.status
+          );
+        }
+
+        waiting.textContent = data.reply || "AI chưa trả về nội dung.";
+      } catch (error) {
+        waiting.textContent = "Chưa kết nối được AI: " + error.message;
+      } finally {
+        send.disabled = false;
+        input.focus();
+      }
+    });
+  </script>
+</body>
+</html>
+```
